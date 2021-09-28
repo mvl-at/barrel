@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: Test1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    rest:
+      base-path: /api/v1
+  ldap:
+    base: dc=mvl,dc=at
+    username: cn=admin,dc=mvl,dc=at
+    password: adminpassword
+    urls:
+      - ldap://localhost:1389
+logging:
+  level:
+    org.springframework.data: debug
+    org.springframework.security: debug
+    org.springframework.ldap: debug
+    at.mvl.barrel: trace
+server:
+  port: 7380

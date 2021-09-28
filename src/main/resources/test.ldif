@@ -1,0 +1,36 @@
+dn: dc=mvl,dc=at
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: mvl
+dn: ou=people,dc=mvl,dc=at
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+dn: uid=ben,ou=people,dc=mvl,dc=at
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Anne Hathaway
+sn: Hathaway
+uid: anne
+description: Pretty Girl :-)
+dn: uid=bob,ou=people,dc=mvl,dc=at
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: John Hamilton
+sn: Hamilton
+uid: john
+description: Cool guy!!
+dn: uid=mvl,ou=people,dc=mvl,dc=at
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: MVL Notebook
+sn: Notebook
+uid: mvlnotebook
+description: Technical blog!.
