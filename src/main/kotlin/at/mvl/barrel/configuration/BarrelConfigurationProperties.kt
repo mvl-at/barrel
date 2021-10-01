@@ -42,10 +42,18 @@ data class BarrelConfigurationProperties(
         data class JwtConfiguration(
             /** Expiration delta in minutes. */
             val expiration: Long = 10,
+            /** Expiration delta of the renewal token in minutes. */
+            val expirationRenewal: Long = 60 * 24 * 7,
             /** Issuer of the token. */
             val issuer: String = "Barrel",
             /** Secret of the token to sign with. */
-            val secret: String = "pleasereplaceme"
+            val secret: String = "pleasereplaceme",
+            /** Attribute in the token to check if it is a renewal token or not. */
+            val renewalAttribute: String = "ren",
+            /** Attribute name to indicate the last password change. */
+            val passwordAttribute: String = "pwdd",
+            /** Prefix to use for the token. */
+            val prefix: String = "Bearer"
         )
     }
 }

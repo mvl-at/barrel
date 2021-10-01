@@ -1,9 +1,5 @@
 package at.mvl.barrel.security
 
-import at.mvl.barrel.configuration.BarrelConfigurationProperties
-import io.jsonwebtoken.JwtBuilder
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -14,9 +10,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationConverter
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.*
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -24,18 +17,16 @@ import javax.servlet.http.HttpServletResponse
 class JwtAuthenticationFilter(
     authenticationManager: AuthenticationManager,
     loginUrl: String,
-    private val jwtConfiguration: BarrelConfigurationProperties.SecurityConfiguration.JwtConfiguration
+    private val jwtTokenService: JwtTokenService
 ) :
     AbstractAuthenticationProcessingFilter(loginUrl, authenticationManager) {
 
     private val authConverter = BasicAuthenticationConverter()
 
     private val log: Logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
-    private val jwtBuilder: JwtBuilder
 
     init {
         log.trace("init({})", authenticationManager)
-        jwtBuilder = Jwts.builder().setIssuer(jwtConfiguration.issuer)
     }
 
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication? {
@@ -72,12 +63,7 @@ class JwtAuthenticationFilter(
         authResult: Authentication
     ) {
         log.trace("successfulAuthentication({},{},{},{})", request, response, chain, authResult)
-        val inst = Instant.now()
-        val exp = inst.plus(jwtConfiguration.expiration, ChronoUnit.MINUTES)
-        val jwt = jwtBuilder.setSubject(authResult.name).setIssuedAt(Date.from(inst))
-            .setExpiration(Date.from(exp)).signWith(SignatureAlgorithm.HS256, jwtConfiguration.secret)
-            .compact()
-        log.trace("Generated token for {} until {}", authResult.name, Date.from(inst))
-        response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+        jwtTokenService.addTokenToHeader(authResult, response)
+        jwtTokenService.addRenewalTokenToBody(authResult, response)
     }
 }

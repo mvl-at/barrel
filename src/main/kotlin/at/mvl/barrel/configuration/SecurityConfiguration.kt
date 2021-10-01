@@ -2,6 +2,7 @@ package at.mvl.barrel.configuration
 
 import at.mvl.barrel.security.JwtAuthenticationFilter
 import at.mvl.barrel.security.JwtAuthorizationFilter
+import at.mvl.barrel.security.JwtTokenService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,14 +38,12 @@ class SecurityConfiguration(
             JwtAuthenticationFilter(
                 authenticationManager(),
                 barrelConfigurationProperties.security.loginPath,
-                barrelConfigurationProperties.security.jwt
+                jwtTokenService()
             ),
             UsernamePasswordAuthenticationFilter::class.java
         ).addFilter(
             JwtAuthorizationFilter(
-                authenticationManager(),
-                ldapUserDetailsService(contextSource),
-                barrelConfigurationProperties.security.jwt
+                authenticationManager(), jwtTokenService()
             )
         )
             .sessionManagement {
@@ -90,5 +89,10 @@ class SecurityConfiguration(
 
     override fun userDetailsServiceBean(): UserDetailsService {
         return userDetailsService()
+    }
+
+    @Bean
+    fun jwtTokenService(): JwtTokenService {
+        return JwtTokenService(barrelConfigurationProperties, userDetailsService())
     }
 }
