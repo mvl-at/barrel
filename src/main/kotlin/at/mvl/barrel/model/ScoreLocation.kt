@@ -1,17 +1,10 @@
 package at.mvl.barrel.model
 
-import java.io.Serializable
-import javax.persistence.Embeddable
-import javax.persistence.EmbeddedId
 import javax.persistence.Entity
+import javax.persistence.Id
 
 @Entity
 class ScoreLocation(
-    @EmbeddedId var id: ScoreLocationId
+    @Id var id: Long,
+    var name: String
 )
-
-@Embeddable
-class ScoreLocationId(
-    var scoreId: Long,
-    var roomId: Long
-) : Serializable
