@@ -14,6 +14,17 @@ import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+/**
+ * @author Richard Stöckl
+ *
+ * A filter which filters the configured login path and tests for HTTP Basic auth.
+ * When valid credentials were provided, a jwt will be generated.
+ *
+ * @param authenticationManager the authentication manager which should be used for testing the credentials
+ * @param loginUrl the path on which this filter should listen on
+ * @property jwtTokenService the service which should be used to generate the JWTs
+ * @property authConverter used to parse the HTTP Basic auth
+ */
 class JwtAuthenticationFilter(
     authenticationManager: AuthenticationManager,
     loginUrl: String,
@@ -25,10 +36,13 @@ class JwtAuthenticationFilter(
 
     private val log: Logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
 
-    init {
-        log.trace("init({})", authenticationManager)
-    }
-
+    /**
+     * Try to authenticate this request against the authentication manager using HTTP Basic auth.
+     * If no token is provided, the response will contain an HTTP Basic realm header which causes web-browsers to show a simple login dialog.
+     * @param request the request which should contain the HTTP Basic auth
+     * @param response the response which will be used to write the HTTP Basic realm header for a login prompt
+     * @return the authentication of the request or 'null' if authentication was not successful
+     */
     override fun attemptAuthentication(request: HttpServletRequest, response: HttpServletResponse): Authentication? {
         log.trace("attemptAuthentication({},{})", request, response)
         val token: UsernamePasswordAuthenticationToken?
@@ -47,6 +61,10 @@ class JwtAuthenticationFilter(
         return authenticationManager.authenticate(token)
     }
 
+    /**
+     * Write the HTTP Basic authorization realm to a response and set the correct (401 - Unauthorized) HTTP status code.
+     * @param response the response where to write the realm
+     */
     private fun writeAuthorizationRealm(response: HttpServletResponse) {
         log.trace("writeAuthorizationRealm({})", response)
         response.status = HttpStatus.UNAUTHORIZED.value()
@@ -56,6 +74,13 @@ class JwtAuthenticationFilter(
         )
     }
 
+    /**
+     * Write the JWT token to the HTTP Authorization header and the renewal JWT token to the response body.
+     * @param request not used here
+     * @param response the response where to write the JWTs to
+     * @param chain not used here
+     * @param authResult the authentication to use for the JWTs
+     */
     override fun successfulAuthentication(
         request: HttpServletRequest,
         response: HttpServletResponse,
