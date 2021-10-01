@@ -5,9 +5,11 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.rest.core.annotation.RepositoryRestResource
 import org.springframework.security.access.prepost.PreAuthorize
 
-@RepositoryRestResource(path = "books")
-interface BookRepository : CrudRepository<Book, Long> {
-
-    @PreAuthorize("permitAll()")
-    override fun findAll(): MutableIterable<Book>
-}
+/**
+ * @author Richard Stöckl
+ *
+ * Repository for managing books.
+ */
+@RepositoryRestResource
+@PreAuthorize("hasRole(@roleMap.roles().archive)")
+interface BookRepository : CrudRepository<Book, Long>
