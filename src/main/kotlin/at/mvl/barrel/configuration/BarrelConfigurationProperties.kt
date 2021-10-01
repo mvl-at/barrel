@@ -29,8 +29,14 @@ data class BarrelConfigurationProperties(
     )
 
     data class RoleMappingConfiguration(
+        /** Role for accessing members. */
+        val memberAccess: String = "MITGLIEDVALIDIERER",
         /** Role for managing members. */
-        val memberManager: String = "MITGLIEDVERWALTER"
+        val memberManager: String = "MITGLIEDVERWALTER",
+        /** Role for accessing registers. */
+        val registerAccess: String = "REGISTERVALIDIERER",
+        /** Role for managing registers. */
+        val registerManager: String = "REGISTERVERWALTER",
     )
 
     data class SecurityConfiguration(
