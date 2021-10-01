@@ -10,6 +10,7 @@ plugins {
 //    id("org.springframework.experimental.aot") version "0.10.3"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "10.2.0"
+    id("org.jetbrains.dokka") version "1.5.30"
 }
 
 group = "at.mvl"
