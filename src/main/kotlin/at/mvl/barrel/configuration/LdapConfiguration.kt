@@ -18,12 +18,25 @@ import java.time.format.DateTimeFormatter
 import javax.annotation.PostConstruct
 import javax.naming.ldap.LdapName
 
+/**
+ * @author Richard Stöckl
+ *
+ * This class is intended to configure and extend basic LDAP features.
+ * This includes only additional features such as converter registration but not required settings such as configuring the server source(s).
+ */
 @Configuration
 @EnableLdapRepositories(basePackages = ["at.mvl.barrel.repositories.ldap.**"])
-class LdapConfiguration(@Autowired val ldap: LdapTemplate, @Autowired val memberRepository: ExternalMemberRepository) {
+class LdapConfiguration(
+    @Autowired private val ldap: LdapTemplate,
+    @Autowired private val memberRepository: ExternalMemberRepository
+) {
 
     private val logger: Logger = LoggerFactory.getLogger(LdapConfiguration::class.java)
 
+    /**
+     * Register all LDAP data type converters required in this application.
+     * @return the configured conversion service
+     */
     @PostConstruct
     fun conversionService(): DefaultConversionService {
         val odm = ldap.objectDirectoryMapper
@@ -61,6 +74,13 @@ class LdapConfiguration(@Autowired val ldap: LdapTemplate, @Autowired val member
         return conversionService
     }
 
+    /**
+     * Register a converter to a conversion service and produce a log message.
+     * @param conversionService the conversion service where the converter should be registered to
+     * @param converter the converter to register at the conversionService
+     * @param from the source class type
+     * @param to the target class type
+     */
     private fun registerConverter(
         conversionService: GenericConversionService,
         converter: Converter<*, *>,
@@ -72,6 +92,9 @@ class LdapConfiguration(@Autowired val ldap: LdapTemplate, @Autowired val member
     }
 }
 
+/**
+ * Converter which converts an LDAP GeneralizedTime string to an instance of [LocalDate]
+ */
 class GeneralizedTimeToLocalDateConverter : Converter<String, LocalDate> {
 
     private val logger: Logger = LoggerFactory.getLogger(GeneralizedTimeToLocalDateConverter::class.java)
@@ -83,6 +106,9 @@ class GeneralizedTimeToLocalDateConverter : Converter<String, LocalDate> {
     }
 }
 
+/**
+ * Converter which converts an instance of [LocalDate] to an LDAP GeneralizedTime string
+ */
 class LocalDateToGeneralizedTimeConverter : Converter<LocalDate, String> {
 
     private val logger: Logger = LoggerFactory.getLogger(LocalDateToGeneralizedTimeConverter::class.java)
@@ -94,6 +120,12 @@ class LocalDateToGeneralizedTimeConverter : Converter<LocalDate, String> {
     }
 }
 
+/**
+ * Converter which converts an LDAP DN to an [ExternalMember].
+ * Therefore, a [ExternalMemberRepository] is required in order to fetch the [ExternalMember] from an LDAP Server.
+ *
+ * @param memberRepository the repository where the DN is looked up
+ */
 class DnToExternalMemberConverter(private val memberRepository: ExternalMemberRepository) :
     Converter<String, ExternalMember> {
     override fun convert(source: String): ExternalMember? {
@@ -104,6 +136,10 @@ class DnToExternalMemberConverter(private val memberRepository: ExternalMemberRe
     }
 }
 
+/**
+ * Converter which converts an [ExternalMember] to a [String].
+ * This converter just extracts the DN of the [ExternalMember] and returns it.
+ */
 class ExternalMemberToStringConverter : Converter<ExternalMember, String> {
     override fun convert(source: ExternalMember): String {
         return source.id.toString()
