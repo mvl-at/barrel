@@ -21,6 +21,13 @@ import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopul
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
+/**
+ * @author Richard Stöckl
+ *
+ * This class is intended to configure security related settings.
+ * In this case HTTP filters and the LDAP Server.
+ * Furthermore, it provides [LdapUserDetailsService] and [JwtTokenService] as beans.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
@@ -31,6 +38,12 @@ class SecurityConfiguration(
 
     private val logger: Logger = LoggerFactory.getLogger(SecurityConfiguration::class.java)
 
+    /**
+     * Configure the HTTP security.
+     * In this case CORS will be provided, CSRF disabled, [JwtAuthenticationFilter], [JwtAuthorizationFilter] and [UsernamePasswordAuthenticationFilter] registered and the session are set to be provided stateless.
+     *
+     * @param http the HttpSecurity to configure
+     */
     override fun configure(http: HttpSecurity) {
         http.csrf {
             it.disable()
@@ -51,6 +64,13 @@ class SecurityConfiguration(
             }
     }
 
+    /**
+     * Configure the authentication manager.
+     * In this case, LDAP will be configured as authentication source.
+     * This includes which users and groups should be fetched and mapped in which way.
+     *
+     * @param auth the builder to prepare
+     */
     override fun configure(auth: AuthenticationManagerBuilder?) {
         logger.trace("configure({})", auth)
         if (auth == null) {
@@ -67,6 +87,13 @@ class SecurityConfiguration(
             .groupSearchSubtree(barrelConfigurationProperties.ldap.groupSearchSubtree)
     }
 
+    /**
+     * Configures an [LdapUserDetailsService] from a [BaseLdapPathContextSource] and provides it as a bean.
+     * Configures the user/group searches and mappings such as [configure] with the [AuthenticationManagerBuilder].
+     *
+     * @param contextSource the LDAP context source to use
+     * @return the UserDetailsService
+     */
     @Bean
     fun ldapUserDetailsService(contextSource: BaseLdapPathContextSource): LdapUserDetailsService {
         logger.trace("ldapUserDetailsService({})", contextSource)
@@ -83,14 +110,28 @@ class SecurityConfiguration(
         return LdapUserDetailsService(filter, authoritiesPopulator)
     }
 
+    /**
+     * Provides the [LdapUserDetailsService] as [UserDetailsService]
+     *
+     * @return the [LdapUserDetailsService]
+     */
     override fun userDetailsService(): UserDetailsService {
         return ldapUserDetailsService(contextSource)
     }
 
+    /**
+     * Provides the [LdapUserDetailsService] as [UserDetailsService]
+     *
+     * @return the [LdapUserDetailsService]
+     */
     override fun userDetailsServiceBean(): UserDetailsService {
         return userDetailsService()
     }
 
+    /**
+     * Provides the [JwtTokenService] as bean.
+     * @return the [JwtTokenService]
+     */
     @Bean
     fun jwtTokenService(): JwtTokenService {
         return JwtTokenService(barrelConfigurationProperties, userDetailsService())
