@@ -37,6 +37,8 @@ data class BarrelConfigurationProperties(
         val registerAccess: String = "REGISTERVALIDIERER",
         /** Role for managing registers. */
         val registerManager: String = "REGISTERVERWALTER",
+        /** Role for managing the archive. */
+        val archive: String = "ARCHIVAR"
     )
 
     data class SecurityConfiguration(
