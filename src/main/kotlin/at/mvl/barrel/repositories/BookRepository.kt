@@ -12,4 +12,12 @@ import org.springframework.security.access.prepost.PreAuthorize
  */
 @RepositoryRestResource
 @PreAuthorize("hasRole(@roleMap.roles().archive)")
-interface BookRepository : CrudRepository<Book, Long>
+interface BookRepository : CrudRepository<Book, Long> {
+
+    /**
+     * Find all books and sort them by their name.
+     * @return the sorted books
+     */
+    @PreAuthorize("isAuthenticated()")
+    fun findByOrderByName(): List<Book>
+}
