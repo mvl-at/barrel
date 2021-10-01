@@ -12,18 +12,37 @@ import org.springframework.web.server.ResponseStatusException
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
+/**
+ * @author Richard Stöckl
+ *
+ * Controller used to manage the photos from members.
+ */
 @RestController
-@RequestMapping(path = ["\${spring.data.rest.base-path}/photo"])
+@RequestMapping("\${spring.data.rest.base-path}/photo")
 class PhotoController(@Autowired val memberRepository: MemberPhotoRepository) {
 
     private val logger: Logger = LoggerFactory.getLogger(PhotoController::class.java)
 
+    /**
+     * Return the full resolution photo of a member if exists.
+     *
+     * @param username the username of the member from uid={0} without attribute names
+     * @return the binary value of the photo in jpeg
+     */
     @GetMapping("{username}", produces = [MediaType.IMAGE_JPEG_VALUE])
     fun getPhoto(@PathVariable username: String): ByteArray? {
         logger.trace("getPhoto({})", username)
         return memberRepository.findByUsername(username)?.photo
     }
 
+    /**
+     * Provide a photo for a member, binary encoded into the request body.
+     * A thumbnail will be created and stored too.
+     * The photo must be in the jpeg format.
+     *
+     * @param username the username of the member from uid={0} without attribute names
+     * @param photo the binary, jpeg encoded photo from the request body
+     */
     @RequestMapping(path = ["{username}"], method = [RequestMethod.PUT], consumes = [MediaType.IMAGE_JPEG_VALUE])
     fun putPhoto(@PathVariable username: String, @RequestBody photo: ByteArray?) {
         logger.trace("putPhoto({},{})", username, if (photo == null) "null" else "not null")
