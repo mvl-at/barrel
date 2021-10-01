@@ -13,6 +13,13 @@ import org.springframework.web.server.ResponseStatusException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+/**
+ * @author Richard Stöckl
+ *
+ * Controller which provides self-service utilities for members.
+ * This includes tasks such as receiving information about the member via a token,
+ * changing the own or someone else's password, request a new token from a renewal token, etc...
+ */
 @RestController
 @RequestMapping("/selfservice")
 class SelfServiceController(
@@ -21,6 +28,12 @@ class SelfServiceController(
 
     private val logger: Logger = LoggerFactory.getLogger(SelfServiceController::class.java)
 
+    /**
+     * Request information about a member which corresponds to the current [Authentication].
+     *
+     * @param user the [Authentication] received from the context
+     * @return the json encoded [Authentication] or 'null' if the authentication is invalid
+     */
     @GetMapping("info")
     fun info(@Autowired user: Authentication?): Authentication {
         logger.trace("info({})", user)
@@ -28,6 +41,13 @@ class SelfServiceController(
         return user
     }
 
+    /**
+     * Request a token renewal.
+     * The request must contain a valid renewal token.
+     *
+     * @param request the request provided by the context
+     * @param response the response provided by the context
+     */
     @GetMapping("renew")
     fun renew(request: HttpServletRequest, response: HttpServletResponse) {
         logger.trace("renew({})", request)
