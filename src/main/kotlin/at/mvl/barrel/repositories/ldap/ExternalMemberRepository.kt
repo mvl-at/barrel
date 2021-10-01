@@ -43,7 +43,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun <S : ExternalMember?> save(entity: S): S
 
     /**
@@ -55,7 +55,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun <S : ExternalMember?> saveAll(entities: MutableIterable<S>): MutableList<S>
 
     /**
@@ -67,7 +67,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun delete(entity: ExternalMember)
 
     /**
@@ -79,7 +79,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAll()
 
     /**
@@ -91,7 +91,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAll(entities: MutableIterable<ExternalMember>)
 
     /**
@@ -103,7 +103,7 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAllById(ids: MutableIterable<Name>)
 
     /**
@@ -115,6 +115,6 @@ interface ExternalMemberRepository : LdapRepository<ExternalMember> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteById(id: Name)
 }

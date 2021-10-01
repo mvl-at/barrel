@@ -32,7 +32,7 @@ interface MemberPhotoRepository : LdapRepository<MemberPhoto> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun delete(entity: MemberPhoto)
 
     /**
@@ -44,7 +44,7 @@ interface MemberPhotoRepository : LdapRepository<MemberPhoto> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAll()
 
     /**
@@ -56,7 +56,7 @@ interface MemberPhotoRepository : LdapRepository<MemberPhoto> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAll(entities: MutableIterable<MemberPhoto>)
 
     /**
@@ -68,7 +68,7 @@ interface MemberPhotoRepository : LdapRepository<MemberPhoto> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteAllById(ids: MutableIterable<Name>)
 
     /**
@@ -80,6 +80,6 @@ interface MemberPhotoRepository : LdapRepository<MemberPhoto> {
         level = DeprecationLevel.ERROR
     )
     @RestResource(exported = false)
-    @PreAuthorize("false")
+    @PreAuthorize("denyAll()")
     override fun deleteById(id: Name)
 }

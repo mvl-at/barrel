@@ -20,28 +20,28 @@ import javax.naming.Name
 interface RegisterRepository : LdapRepository<Register> {
 
     @Query(base = "ou=Register,ou=Divisionen", value = "(objectClass=mvlGroup)")
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun findAll(): List<Register>
 
     @Query(base = "ou=Register,ou=Divisionen", value = "(objectClass=mvlGroup)")
-    @PreAuthorize("true ")
+    @PreAuthorize("permitAll()")
     fun findRegisters(): List<Register>
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun count(): Long
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun existsById(id: Name): Boolean
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun findAll(ldapQuery: LdapQuery): MutableIterable<Register>
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun findAllById(names: MutableIterable<Name>): MutableList<Register>
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun findById(id: Name): Optional<Register>
 
-    @PreAuthorize("true")
+    @PreAuthorize("permitAll()")
     override fun findOne(ldapQuery: LdapQuery): Optional<Register>
 }
