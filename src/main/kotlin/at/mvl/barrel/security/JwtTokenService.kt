@@ -21,8 +21,12 @@
 package at.mvl.barrel.security
 
 import at.mvl.barrel.configuration.BarrelConfigurationProperties
-import io.jsonwebtoken.*
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.UnsupportedJwtException
 import io.jsonwebtoken.lang.Strings
+import io.jsonwebtoken.security.SecurityException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -45,7 +49,8 @@ import javax.servlet.http.HttpServletResponse
  */
 class JwtTokenService(
     barrelConfigurationProperties: BarrelConfigurationProperties,
-    private val userDetailsService: UserDetailsService
+    private val userDetailsService: UserDetailsService,
+    private val keyService: KeyService
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(JwtTokenService::class.java)
@@ -128,13 +133,12 @@ class JwtTokenService(
         logger.trace("generateToken({},{})", auth, renewal)
         val inst = Instant.now()
         val exp = inst.plus(if (renewal) jwtConfig.expirationRenewal else jwtConfig.expiration, ChronoUnit.MINUTES)
-        return Jwts.builder()
+        return Jwts.builder().signWith(keyService.privateKey())
             .setIssuer(jwtConfig.issuer)
             .setSubject(auth.name)
             .setIssuedAt(Date.from(inst))
             .setExpiration(Date.from(exp))
             .claim(jwtConfig.renewalAttribute, renewal)
-            .signWith(SignatureAlgorithm.HS256, jwtConfig.secret)
             .compact()
     }
 
@@ -161,7 +165,7 @@ class JwtTokenService(
             return null
         }
         try {
-            val jwt = Jwts.parser().setSigningKey(jwtConfig.secret).parseClaimsJws(token.removePrefix("Bearer "))
+            val jwt = Jwts.parserBuilder().setSigningKey(keyService.publicKey()).build().parseClaimsJws(token.removePrefix("Bearer "))
             val isRenewal = jwt.body[jwtConfig.renewalAttribute] == true
             logger.debug(
                 "Received {}token for {} from {} which expires at {}, issued at {}",
@@ -186,7 +190,7 @@ class JwtTokenService(
             logger.warn("Received unsupported token: {}", e.message)
         } catch (e: MalformedJwtException) {
             logger.warn("Received malformed token: {}", e.message)
-        } catch (e: SignatureException) {
+        } catch (e: SecurityException) {
             logger.warn("Received token with invalid signature: {}", e.message)
         } catch (e: IllegalArgumentException) {
             logger.warn("Received illegal token: {}", e.message)

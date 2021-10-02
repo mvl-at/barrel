@@ -23,6 +23,7 @@ package at.mvl.barrel.configuration
 import at.mvl.barrel.security.JwtAuthenticationFilter
 import at.mvl.barrel.security.JwtAuthorizationFilter
 import at.mvl.barrel.security.JwtTokenService
+import at.mvl.barrel.security.KeyService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,7 +54,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 class SecurityConfiguration(
     @Autowired private val contextSource: BaseLdapPathContextSource,
-    @Autowired private val barrelConfigurationProperties: BarrelConfigurationProperties
+    @Autowired private val barrelConfigurationProperties: BarrelConfigurationProperties,
+    @Autowired private val keyService: KeyService
 ) : WebSecurityConfigurerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(SecurityConfiguration::class.java)
@@ -154,6 +156,6 @@ class SecurityConfiguration(
      */
     @Bean
     fun jwtTokenService(): JwtTokenService {
-        return JwtTokenService(barrelConfigurationProperties, userDetailsService())
+        return JwtTokenService(barrelConfigurationProperties, userDetailsService(), keyService)
     }
 }

@@ -65,7 +65,13 @@ data class BarrelConfigurationProperties(
         /** Jwt configuration. */
         val jwt: JwtConfiguration = JwtConfiguration(),
         /** Absolute paths for login (JwtAuthenticationFilter) */
-        val loginPath: String = "/selfservice/login"
+        val loginPath: String = "/selfservice/login",
+        /** Path to the private key in DER format. */
+        val privateKey: String = "barrel-private-key.der",
+        /** Path to the public key in DER format. */
+        val publicKey: String = "barrel-public-key.der",
+        /** Path to the X.509 certificate. */
+        val certificate: String = "barrel.crt"
     ) {
         data class JwtConfiguration(
             /** Expiration delta in minutes. */
