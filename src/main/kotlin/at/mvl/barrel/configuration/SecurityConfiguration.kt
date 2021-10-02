@@ -20,10 +20,8 @@
 
 package at.mvl.barrel.configuration
 
-import at.mvl.barrel.security.JwtAuthenticationFilter
-import at.mvl.barrel.security.JwtAuthorizationFilter
-import at.mvl.barrel.security.JwtTokenService
-import at.mvl.barrel.security.KeyService
+import at.mvl.barrel.repositories.ldap.MemberRepository
+import at.mvl.barrel.security.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,7 +53,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfiguration(
     @Autowired private val contextSource: BaseLdapPathContextSource,
     @Autowired private val barrelConfigurationProperties: BarrelConfigurationProperties,
-    @Autowired private val keyService: KeyService
+    @Autowired private val keyService: KeyService,
+    @Autowired private val memberRepository: MemberRepository
 ) : WebSecurityConfigurerAdapter() {
 
     private val logger: Logger = LoggerFactory.getLogger(SecurityConfiguration::class.java)
@@ -107,6 +106,7 @@ class SecurityConfiguration(
             .groupSearchFilter(barrelConfigurationProperties.ldap.groupSearchFilter)
             .groupRoleAttribute(barrelConfigurationProperties.ldap.groupRoleAttribute)
             .groupSearchSubtree(barrelConfigurationProperties.ldap.groupSearchSubtree)
+            .userDetailsContextMapper(userDetailsMapper())
     }
 
     /**
@@ -129,7 +129,9 @@ class SecurityConfiguration(
         authoritiesPopulator.setSearchSubtree(barrelConfigurationProperties.ldap.groupSearchSubtree)
         authoritiesPopulator.setGroupRoleAttribute(barrelConfigurationProperties.ldap.groupRoleAttribute)
         authoritiesPopulator.setGroupSearchFilter(barrelConfigurationProperties.ldap.groupSearchFilter)
-        return LdapUserDetailsService(filter, authoritiesPopulator)
+        val service = LdapUserDetailsService(filter, authoritiesPopulator)
+        service.setUserDetailsMapper(userDetailsMapper())
+        return service
     }
 
     /**
@@ -148,6 +150,16 @@ class SecurityConfiguration(
      */
     override fun userDetailsServiceBean(): UserDetailsService {
         return userDetailsService()
+    }
+
+    /**
+     * Provides an [BarrelLdapUserDetailsMapper] to map usernames to their authorities.
+     *
+     * @return the [BarrelLdapUserDetailsMapper]
+     */
+    @Bean
+    fun userDetailsMapper(): BarrelLdapUserDetailsMapper {
+        return BarrelLdapUserDetailsMapper()
     }
 
     /**
