@@ -165,7 +165,8 @@ class JwtTokenService(
             return null
         }
         try {
-            val jwt = Jwts.parserBuilder().setSigningKey(keyService.publicKey()).build().parseClaimsJws(token.removePrefix("Bearer "))
+            val jwt = Jwts.parserBuilder().setSigningKey(keyService.publicKey()).build()
+                .parseClaimsJws(token.removePrefix("Bearer "))
             val isRenewal = jwt.body[jwtConfig.renewalAttribute] == true
             logger.debug(
                 "Received {}token for {} from {} which expires at {}, issued at {}",
@@ -176,7 +177,7 @@ class JwtTokenService(
                 jwt.body.issuedAt
             )
             val user = userDetailsService.loadUserByUsername(jwt.body.subject)
-            return Pair(UsernamePasswordAuthenticationToken(user.username, null, user.authorities), isRenewal)
+            return Pair(UsernamePasswordAuthenticationToken(user, null, user.authorities), isRenewal)
         } catch (e: ExpiredJwtException) {
             logger.warn(
                 "Received expired token from {}, issued by {} at {}, expired at {}: {}",
