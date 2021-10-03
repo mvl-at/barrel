@@ -1,0 +1,84 @@
+// Barrel, the backend of the Musikverein Leopoldsdorf.
+// Copyright (C) 2021  Richard Stöckl
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+= Barrel
+Richard Stöckl <richard.stoeckl@aon.at>
+
+:icons: font
+:source-highlighter: coderay
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+endif::[]
+
+Barrel is the REST backend of the Musikverein Leopoldsdorf.
+It uses LDAP for managing all members and Postgres for all other data.
+
+== Setup
+
+To perform a plain and direct install, only Git, a Java SDK and an internet connection are required.
+When these requirements are fulfilled, only a handful of commands need to be entered:
+
+.Clone the repository
+[source,shell script]
+----
+git clone https://github.com/mvl-at/barrel.git
+./gradlew bootRun
+----
+
+Barrel uses RSA keys for signing JWTs in the DER format.
+The following commands will generate a private key, a public key and an X.509 certificate which is valid for one year.
+
+.Generate the keys and the certificate
+[source, shell script]
+----
+openssl req -x509 -newkey rsa:4096 -days 365 -utf8 -nodes -outform PEM -keyform PEM -keyout barrel-private-key.pem -out barrel.crt -sha512
+openssl pkcs8 -topk8 -inform PEM -outform DER -in barrel-private-key.pem -out barrel-private-key.der -nocrypt
+openssl rsa -in barrel-private-key.der -pubout -inform DER -outform DER -out barrel-public-key.der
+----
+
+You may want to delete the `barrel-private-key.pem` afterwards.
+
+
+This may take a while, but when done, the service will listen on the preconfigured port.
+
+NOTE: The IDE may provide an easier way to start the application for development purposes.
+
+== Development
+
+To begin development some steps may be necessary.
+
+=== Lint
+
+To lint the project manually run `./gradlew ktlintFormat`.
+To format the project before every commit run `./gradlew addKtlintFormatGitPreCommitHook` once.
+
+== Configuration
+
+For development purposes the configuration file is located at `src/main/resources/application.yml`.
+In order to provide to the IDE the ability to recognize all available properties and the documentation, `gradle kaptKotlin` may be run.
+This is required, everytime the structure of the `BarrelConfigurationProperties` changes.
+
+TIP: To receive an attribute description, refer either to your IDEs autocomplete feature or to `src/main/kotlin/at/mvl/barrel/configuration/BarrelConfigurationProperties.kt`.
+
+== Todos
+
+* Email service
+* finish role mappings
+* thumbnails
+* password resets
