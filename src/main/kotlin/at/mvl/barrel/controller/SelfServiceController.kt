@@ -21,14 +21,15 @@
 package at.mvl.barrel.controller
 
 import at.mvl.barrel.security.JwtTokenService
+import at.mvl.barrel.security.LdapUserPasswordManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -43,7 +44,8 @@ import javax.servlet.http.HttpServletResponse
 @RestController
 @RequestMapping("/selfservice")
 class SelfServiceController(
-    @Autowired private val jwtTokenService: JwtTokenService
+    @Autowired private val jwtTokenService: JwtTokenService,
+    @Autowired private val passwordManager: LdapUserPasswordManager
 ) {
 
     private val logger: Logger = LoggerFactory.getLogger(SelfServiceController::class.java)
@@ -59,6 +61,61 @@ class SelfServiceController(
         logger.trace("info({})", user)
         user ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "No valid token provided")
         return user
+    }
+
+    /**
+     * Change the own user password.
+     * The old password is required for this action.
+     * @param oldPassword the old password
+     * @param newPassword the new password
+     * @param authentication the user whose password should be changed
+     */
+    @PostMapping(
+        "password",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
+    @PreAuthorize("isAuthenticated()")
+    fun changePassword(
+        @RequestParam("oldPassword", required = true) oldPassword: String,
+        @RequestParam("newPassword", required = true) newPassword: String,
+        @Autowired authentication: Authentication
+    ) {
+        logger.trace("changePassword([PROTECTED],[PROTECTED],{})", authentication)
+        logger.info("Change password request for {}", authentication.name)
+        if (!passwordManager.changePasswordChecked(authentication.name, oldPassword, newPassword)) {
+            logger.info("Change password request for {} failed due to invalid password", authentication.name)
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "old password in invalid")
+        }
+        logger.info("{} changed their password", authentication.name)
+    }
+
+    /**
+     * Change the password of another user without providing the old one.
+     * Requesting this with the own username will result in an HTTP 403.
+     * Only member managers are allowed to use this.
+     * @param username the user whose password should be changed
+     * @param newPassword the new password
+     * @param authentication the member manager
+     */
+    @PostMapping(
+        "password/{username}",
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
+    @PreAuthorize("hasRole(@roleMap.roles().memberManager) && !#username.equalsIgnoreCase(authentication.name)")
+    fun changeOtherPassword(
+        @PathVariable("username") username: String,
+        @RequestParam(name = "newPassword", required = true) newPassword: String,
+        @Autowired authentication: Authentication
+    ) {
+        logger.trace("changePassword({},[PROTECTED],{})", username, authentication)
+        logger.info("Change password request from {} for {}", authentication.name, username)
+        try {
+            passwordManager.changePasswordUnchecked(username, newPassword)
+        } catch (e: IllegalArgumentException) {
+            logger.debug("Cannot find user with username {}: {}", username, e.message)
+            throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        }
+        logger.info("Change password request from {} for {} was successful", authentication.name, username)
     }
 
     /**
