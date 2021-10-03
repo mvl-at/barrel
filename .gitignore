@@ -52,3 +52,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### barrel keys and certificate ###
+barrel-private-key.pem
+barrel-private-key.der
+barrel-public-key.der
+barrel.crt
